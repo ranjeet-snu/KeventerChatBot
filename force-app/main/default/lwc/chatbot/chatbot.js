@@ -1,91 +1,60 @@
 import { LightningElement, api, track } from 'lwc';
+import getLatestOpenTask from '@salesforce/apex/LeadChatBotController.getLatestOpenTask';
 import updateLatestTask from '@salesforce/apex/LeadChatBotController.updateLatestTask';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 export default class Chatbot extends LightningElement {
-    @api recordId; // Automatically gets Lead ID from the page
+    @api recordId;
     @track isOpen = false;
     @track userInput = '';
+    @track latestTask;
     @track isListening = false;
-    @track isProcessing = false;
 
-    get chatIconClass() {
-        return this.isOpen ? 'chat-bubble hidden' : 'chat-bubble visible pulse';
-    }
+    // Computed properties for UI states
+    get isDisabled() { return !this.latestTask; }
+    get placeholderText() { return this.latestTask ? "Type or use mic..." : "Input disabled"; }
+    get inputWrapperClass() { return this.isDisabled ? 'input-wrapper disabled-bg' : 'input-wrapper'; }
+    get chatIconClass() { return this.isOpen ? 'chat-bubble hidden' : 'chat-bubble visible pulse'; }
+    get micClass() { return this.isListening ? 'mic-btn listening' : 'mic-btn'; }
+    get micVariant() { return this.isListening ? 'error' : 'default'; }
 
-    get micClass() {
-        return this.isListening ? 'mic-btn listening' : 'mic-btn';
-    }
-
-    get micVariant() {
-        return this.isListening ? 'error' : 'default';
-    }
-
-    toggleChat() {
+    async toggleChat() {
         this.isOpen = !this.isOpen;
+        if (this.isOpen) {
+            this.fetchTask();
+        }
     }
 
-    handleInputChange(event) {
-        this.userInput = event.target.value;
+    fetchTask() {
+        getLatestOpenTask({ leadId: this.recordId })
+            .then(result => { this.latestTask = result; })
+            .catch(error => { console.error(error); });
     }
 
-    // Voice to Text functionality
+    handleInputChange(event) { this.userInput = event.target.value; }
+
     handleListen() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            this.showToast('Error', 'Browser does not support Speech Recognition', 'error');
-            return;
-        }
-
+        if (!SpeechRecognition) return;
         const recognition = new SpeechRecognition();
         recognition.lang = 'en-US';
-        
-        if (!this.isListening) {
-            this.isListening = true;
-            recognition.start();
-        }
-
+        this.isListening = true;
+        recognition.start();
         recognition.onresult = (event) => {
             this.userInput = event.results[0][0].transcript;
             this.isListening = false;
         };
-
-        recognition.onerror = () => {
-            this.isListening = false;
-        };
+        recognition.onerror = () => { this.isListening = false; };
     }
 
     handleUpdate() {
-    // Check if input is empty
-    if (!this.userInput || this.userInput.trim() === '') {
-        this.showToast('Wait!', 'Please enter or speak a comment first.', 'warning');
-        return;
-    }
-
-    this.isProcessing = true;
-
-    updateLatestTask({ leadId: this.recordId, comment: this.userInput })
-        .then(() => {
-            // Updated success message as requested
-            this.showToast('Success', 'Comments added', 'success');
-            this.userInput = '';
-            this.isOpen = false; // Minimize after success
-        })
-        .catch(error => {
-            // Log error to console for debugging
-            console.error('Update Error: ', error);
-            let message = 'Unknown error';
-            if (error.body && error.body.message) {
-                message = error.body.message;
-            }
-            this.showToast('Error', message, 'error');
-        })
-        .finally(() => { 
-            this.isProcessing = false; 
-        });
-}
-
-    showToast(title, message, variant) {
-        this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
+        if (!this.userInput) return;
+        updateLatestTask({ taskId: this.latestTask.Id, comment: this.userInput })
+            .then(() => {
+                this.dispatchEvent(new ShowToastEvent({ title: 'Success', message: 'Comments added', variant: 'success' }));
+                this.userInput = '';
+                this.isOpen = false;
+            })
+            .catch(error => { console.error(error); });
     }
 }

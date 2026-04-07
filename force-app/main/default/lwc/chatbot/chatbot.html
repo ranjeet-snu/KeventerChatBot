@@ -1,34 +1,49 @@
 <template>
     <div class="slds-scope">
         <div class={chatIconClass} onclick={toggleChat}>
-            <lightning-icon icon-name="utility:chat" alternative-text="Chat" variant="inverse" size="medium"></lightning-icon>
+            <lightning-icon icon-name="utility:chat" variant="inverse" size="medium"></lightning-icon>
         </div>
 
         <template if:true={isOpen}>
-            <section class="premium-chat-container slds-popover slds-nubbin_bottom-right">
+            <section class="premium-chat-container">
                 <header class="chat-header">
                     <div class="header-content">
                         <span class="status-dot"></span>
-                        <h2>Assistant</h2>
+                        <h2>Task Assistant</h2>
                     </div>
                     <lightning-button-icon icon-name="utility:minimize_window" onclick={toggleChat} variant="bare-inverse"></lightning-button-icon>
                 </header>
 
                 <div class="chat-body">
-                    <p class="bot-msg">Please put your comments below...</p>
-                    <template if:true={isProcessing}>
-                        <div class="loader">Updating record...</div>
+                    <template if:true={latestTask}>
+                        <div class="task-card">
+                            <p class="label">UPDATING TASK:</p>
+                            <p class="task-subject">{latestTask.Subject}</p>
+                        </div>
+                        <p class="bot-msg">Please put your comments below...</p>
+                    </template>
+
+                    <template if:false={latestTask}>
+                        <div class="error-state">
+                            <lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon>
+                            <p>No open task found for this Lead.</p>
+                        </div>
                     </template>
                 </div>
 
                 <footer class="chat-footer">
-                    <div class="input-wrapper">
-                        <input type="text" placeholder="Type or use mic..." value={userInput} onchange={handleInputChange} class="custom-input"/>
-                        <button class={micClass} onclick={handleListen}>
+                    <div class={inputWrapperClass}>
+                        <input type="text" 
+                               placeholder={placeholderText} 
+                               disabled={isDisabled}
+                               value={userInput} 
+                               oninput={handleInputChange} 
+                               class="custom-input"/>
+                        <button class={micClass} onclick={handleListen} disabled={isDisabled}>
                             <lightning-icon icon-name="utility:record" size="xx-small" variant={micVariant}></lightning-icon>
                         </button>
                     </div>
-                    <button class="send-btn" onclick={handleUpdate}>Update Lead Task</button>
+                    <button class="send-btn" onclick={handleUpdate} disabled={isDisabled}>Update Lead Task</button>
                 </footer>
             </section>
         </template>

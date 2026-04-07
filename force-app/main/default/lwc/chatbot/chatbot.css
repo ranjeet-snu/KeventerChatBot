@@ -30,6 +30,29 @@
     animation: slideUp 0.3s ease-out;
 }
 
+
+/* Premium Task Card */
+.task-card {
+    background: #ffffff;
+    border-left: 4px solid #0070d2;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.label { font-size: 10px; color: #747474; font-weight: bold; margin-bottom: 2px; }
+.task-subject { font-size: 13px; color: #16325c; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Error State */
+.error-state { text-align: center; padding-top: 20px; color: #ea001e; font-weight: bold; font-size: 13px; }
+
+/* Disabled UI */
+.disabled-bg { background: #e0e5ee !important; cursor: not-allowed; }
+.custom-input:disabled { cursor: not-allowed; color: #999; }
+.send-btn:disabled { background: #b0adab; cursor: not-allowed; }
+
+.bot-msg { font-size: 13px; color: #3e3e3c; margin-top: 10px; }
 .chat-header {
     background: #16325c;
     color: white;

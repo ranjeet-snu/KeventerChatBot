@@ -1,29 +1,40 @@
 public with sharing class LeadChatBotController {
-    @AuraEnabled
-    public static void updateLatestTask(Id leadId, String comment) {
-        // Ensure leadId isn't null
-        if (leadId == null) {
-            throw new AuraHandledException('Lead ID is missing. Are you on a Lead record page?');
-        }
-
-        // Find the most recent task that is not completed
-        List<Task> tasks = [SELECT Id, Description 
+    
+    /** * Method 1: Fetches the latest open task to display in the Chatbot UI
+     * Called when the chatbot icon is clicked
+     */
+    @AuraEnabled(cacheable=false) 
+    public static Task getLatestOpenTask(Id leadId) {
+        // We look for tasks linked to the Lead (WhoId) that are NOT closed
+        List<Task> tasks = [SELECT Id, Subject, Description 
                             FROM Task 
                             WHERE WhoId = :leadId 
                             AND IsClosed = false 
                             ORDER BY CreatedDate DESC 
                             LIMIT 1];
         
-        if(!tasks.isEmpty()) {
-            try {
-                tasks[0].Description = comment;
-                update tasks[0];
-            } catch (Exception e) {
-                throw new AuraHandledException('Database Error: ' + e.getMessage());
+        // Returns the task object if found, otherwise returns null
+        return tasks.isEmpty() ? null : tasks[0];
+    }
+
+    /** * Method 2: Updates the Description/Comments of the specific Task
+     * Called when the user clicks 'Update Lead Task'
+     */
+    @AuraEnabled
+    public static void updateLatestTask(Id taskId, String comment) {
+        try {
+            // Check if taskId is valid
+            if(taskId == null) {
+                throw new AuraHandledException('No Task ID provided for update.');
             }
-        } else {
-            // Throw a specific error if no task is found
-            throw new AuraHandledException('No open task found to update for this Lead.');
+            
+            // Perform the update on the Description field
+            Task taskToUpdate = new Task(Id = taskId, Description = comment);
+            update taskToUpdate;
+            
+        } catch (Exception e) {
+            // Sends the specific error message back to the LWC toast
+            throw new AuraHandledException('Error updating task: ' + e.getMessage());
         }
     }
 }
