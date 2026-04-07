@@ -1,0 +1,174 @@
+<template>
+    <lightning-spinner if:true={isLoading}></lightning-spinner>
+    <template if:true={showWelcomeScreen}>
+        <!-- Language Selector -->
+        <div class="language-selector slds-float_right slds-m-around_medium">
+            <label class="custom-label">Select Language</label>
+            <lightning-combobox name="language" variant="label-hidden" value={selectedLanguage}
+                placeholder="Select Language" options={languageOptions} onchange={handleLanguageChange}>
+            </lightning-combobox>
+            <!-- <lightning-combobox name="voice" label="Select Voice" value={selectedVoice} options={voiceOptions}
+                onchange={handleVoiceChange} class="slds-m-left_medium" style="max-width: 200px;">
+            </lightning-combobox> -->
+        </div>
+
+        <div class="welcome-screen slds-align_absolute-center slds-text-align_center" style={welcomeScreenStyle}>
+            <img src={botImage} alt="Agentforce Bot" style={HomeScreenBitImageStyle} />
+            <h1 class="slds-text-heading_large">How can <span class="agentforce-highlight">{AgentName}</span> help?</h1>
+
+            <div class="slds-col slds-size_1-of-1 textarea-with-icon">
+                <div class="input-container">
+                    <lightning-textarea class="chat-input" variant="label-hidden" value={userInput}
+                        onchange={handleInput} onkeydown={handleKeyDown} placeholder={agentPlaceholder}>
+                    </lightning-textarea>
+                    <div class="icon-buttons">
+                        <button class="send-icon-button" title="Send" onclick={startChat} aria-label="Send message">
+                            <lightning-icon icon-name="utility:up" size="small"></lightning-icon>
+                        </button>
+                        <button class="mic-icon-button" title={micButtonLabel} onclick={toggleMic}
+                            aria-label={micButtonLabel}>
+                            <lightning-icon icon-name={micIcon} size="small"></lightning-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <template if:true={isListening}>
+                <div class="listening-bar slds-m-top_small">
+                    🎙️ Listening...
+                </div>
+            </template>
+        </div>
+
+        <!-- 🔇 Hidden iframe for voice recognition -->
+        <iframe src={iframeUrl} style="display:none;" title="Speech Recognizer"></iframe>
+    </template>
+
+
+    <template if:false={showWelcomeScreen}>
+        <!-- Language Selector (Mobile-first design, repositioned via media query) -->
+        <div class="language-selector-container">
+            <label class="custom-label">Select Language</label>
+            <lightning-combobox name="language" variant="label-hidden" value={selectedLanguage}
+                placeholder="Select Language" options={languageOptions} onchange={handleLanguageChange}>
+            </lightning-combobox>
+        </div>
+
+        <div class="chat-resizable-container">
+            <!-- Chat Window -->
+            <div class="chat-window slds-box slds-scrollable_y" style={chatWindowStyle}>
+                <template for:each={messages} for:item="msg">
+                    <div key={msg.id}>
+                        <template if:true={msg.isSystem}>
+                            <div class="slds-text-align_center slds-text-color_weak slds-m-vertical_x-small">
+                                {msg.text}
+                            </div>
+                        </template>
+
+                        <template if:true={msg.isBot}>
+                            <div class="slds-chat-message">
+                                <img src={botIcon} alt="bot avatar"
+                                    style="width: 24px; height: 24px; border-radius: 50%; margin-right: 8px;" />
+                                <div class="slds-chat-message__text slds-chat-message__text_inbound slds-p-around_x-small slds-m-vertical_x-small"
+                                    style="background-color: #edf4ff; color: #001e5b; border-radius: 0.5rem; max-width: 80%; align-self: flex-start; font-weight: bold">
+
+                                    <span>{msg.text}</span>
+                                    <!-- <lightning-button-icon icon-name="utility:play" variant="bare"
+                                        alternative-text="Play voice" title="Play voice" class="slds-m-left_x-small"
+                                        onclick={handlePlayVoice} data-msgtext={msg.text}>
+                                    </lightning-button-icon> -->
+                                    <!-- VOICE BUTTON -->
+                                    <lightning-button-icon icon-name={msg.iconName} alternative-text='Play/Pause'
+                                        title='Play/Pause' variant="bare" class="slds-m-left_x-small"
+                                        onclick={handleToggleVoice} data-msgid={msg.id} data-msgtext={msg.text}>
+                                    </lightning-button-icon>
+
+                                    <!-- Clickable Options (if any) -->
+                                    <template if:true={msg.options}>
+                                        <div class="options-list slds-m-top_small">
+                                            <template for:each={msg.options} for:item="option">
+                                                <button key={option} class="option-button" onclick={handleOptionClick}
+                                                    data-option={option}>
+                                                    {option}
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </template>
+
+                                    <!-- Project Cards Vertical with Numbering -->
+                                    <template if:true={msg.projectCards}>
+                                        <div class="slds-m-top_small slds-p-around_small">
+                                            <template for:each={msg.projectCards} for:item="card">
+                                                <div key={card.imageUrl} class="slds-m-bottom_medium">
+                                                    <div class="slds-text-body_regular slds-m-bottom_x-small"
+                                                        style="font-weight: 600;">
+                                                        {card.displayText}
+                                                    </div>
+                                                    <img src={card.imageUrl} alt={card.name}
+                                                        style="width: 100%; max-width: 480px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);" />
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+
+                                </div>
+                            </div>
+                        </template>
+
+
+                        <template if:true={msg.isUser}>
+                            <div class="slds-chat-message">
+                                <div class="slds-chat-message__text slds-chat-message__text_outbound slds-p-around_x-small slds-m-vertical_x-small slds-theme_info"
+                                    style="background-color: #005290; color: white; border-radius: 0.5rem; max-width: 80%; align-self: flex-end; font-weight: bold">
+                                    <span>{msg.text}</span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Temporary bot message while waiting -->
+                <template if:true={isSending}>
+                    <div class="slds-chat-message">
+                        <div class="slds-chat-message__text slds-chat-message__text_inbound slds-p-around_x-small slds-m-vertical_x-small"
+                            style="background-color: #edf4ff; color: #001e5b; border-radius: 0.5rem; max-width: 80%; align-self: flex-start; font-weight: bold">
+                            <span>{agentLoadingMessage}</span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Resize Handle -->
+            <div class="resize-handle" onmousedown={startResize}></div>
+
+            <!-- Input area -->
+            <div class="input-area slds-m-top_small">
+                <div class="textarea-wrapper">
+                    <lightning-textarea label="Your Message" value={userInput} onchange={handleInput}
+                        disabled={isSending} onkeydown={handleKeyDown} variant="label-hidden"
+                        placeholder="Type your message...">
+                    </lightning-textarea>
+
+                    <!-- Mic Button Floating on Textarea -->
+                    <div class="mic-button-wrapper">
+                        <button class="mic-icon-button" title={micButtonLabel} onclick={toggleMic}
+                            aria-label="Start voice input">
+                            <lightning-icon icon-name={micIcon} size="small"></lightning-icon>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-1 slds-m-top_small">
+                    <lightning-button variant="brand" label="Send" onclick={sendMessage} disabled={isSendDisabled}>
+                    </lightning-button>
+                </div>
+            </div>
+            <template if:true={isListening}>
+                <div class="listening-bar"></div>
+            </template>
+        </div>
+        <!-- Hidden iframe for speech recognition -->
+        <iframe src={iframeUrl} style="display: none;" sandbox="allow-scripts allow-same-origin"></iframe>
+    </template>
+
+</template>

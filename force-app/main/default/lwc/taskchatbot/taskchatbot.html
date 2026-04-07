@@ -1,0 +1,186 @@
+<template>
+    <!-- ══════════════════════════════════════════════════════════
+         FLOATING CHAT BUBBLE (always visible, bottom-right)
+    ══════════════════════════════════════════════════════════ -->
+    <div class="chat-launcher" onclick={toggleChat} title="Task Assistant">
+        <template if:false={isChatOpen}>
+            <span class="launcher-icon">💬</span>
+            <template if:true={hasUnread}>
+                <span class="unread-badge">{unreadCount}</span>
+            </template>
+        </template>
+        <template if:true={isChatOpen}>
+            <span class="launcher-icon">✕</span>
+        </template>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         CHAT POPUP WINDOW
+    ══════════════════════════════════════════════════════════ -->
+    <template if:true={isChatOpen}>
+        <div class={chatPanelClass}>
+
+            <!-- ── Header ── -->
+            <div class="chat-header">
+                <div class="header-left">
+                    <div class="agent-avatar">
+                        <span>⚡</span>
+                    </div>
+                    <div class="header-info">
+                        <span class="agent-name">{agentName}</span>
+                        <span class="agent-status">
+                            <span class="status-dot"></span>
+                            {headerStatusText}
+                        </span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <!-- Language selector in header -->
+                    <lightning-combobox
+                        name="language"
+                        variant="label-hidden"
+                        value={selectedLanguage}
+                        placeholder="Lang"
+                        options={languageOptions}
+                        onchange={handleLanguageChange}
+                        class="lang-combo">
+                    </lightning-combobox>
+                    <button class="header-btn" onclick={toggleChat} title="Close">✕</button>
+                </div>
+            </div>
+
+            <!-- ── Loading spinner ── -->
+            <template if:true={isInitializing}>
+                <div class="init-loader">
+                    <div class="loader-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <p>Connecting to Task Agent...</p>
+                </div>
+            </template>
+
+            <!-- ── Chat body ── -->
+            <template if:false={isInitializing}>
+                <div class="chat-body" lwc:ref="chatBody">
+
+                    <!-- Messages -->
+                    <template for:each={messages} for:item="msg">
+                        <div key={msg.id} class={msg.wrapperClass}>
+
+                            <!-- System message (timestamp / joined) -->
+                            <template if:true={msg.isSystem}>
+                                <div class="system-msg">{msg.text}</div>
+                            </template>
+
+                            <!-- Bot message -->
+                            <template if:true={msg.isBot}>
+                                <div class="bot-row">
+                                    <div class="bot-avatar-sm">⚡</div>
+                                    <div class="bot-bubble">
+                                        <p class="bubble-text">{msg.text}</p>
+
+                                        <!-- Task search results as cards -->
+                                        <template if:true={msg.taskCards}>
+                                            <div class="task-cards">
+                                                <template for:each={msg.taskCards} for:item="card">
+                                                    <div key={card.id} class={card.cardClass} onclick={handleTaskSelect} data-taskid={card.id} data-subject={card.subject}>
+                                                        <div class="task-card-header">
+                                                            <span class="task-icon">📋</span>
+                                                            <span class="task-subject">{card.subject}</span>
+                                                        </div>
+                                                        <div class="task-card-meta">
+                                                            <span class={card.statusClass}>{card.status}</span>
+                                                            <span class={card.priorityClass}>{card.priority}</span>
+                                                        </div>
+                                                        <template if:true={card.description}>
+                                                            <p class="task-desc-preview">{card.descriptionPreview}</p>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+
+                                        <!-- Success confirmation card -->
+                                        <template if:true={msg.isSuccess}>
+                                            <div class="success-card">
+                                                <span class="success-icon">✅</span>
+                                                <span class="success-text">{msg.successDetail}</span>
+                                            </div>
+                                        </template>
+
+                                        <!-- Voice toggle -->
+                                        <button class="voice-btn" onclick={handleToggleVoice} data-msgid={msg.id} data-msgtext={msg.text} title="Play / Pause">
+                                            <lightning-icon icon-name={msg.iconName} size="xx-small" alternative-text="Play/Pause"></lightning-icon>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- User message -->
+                            <template if:true={msg.isUser}>
+                                <div class="user-row">
+                                    <div class="user-bubble">
+                                        <p class="bubble-text">{msg.text}</p>
+                                    </div>
+                                </div>
+                            </template>
+
+                        </div>
+                    </template>
+
+                    <!-- Typing indicator -->
+                    <template if:true={isSending}>
+                        <div class="bot-row">
+                            <div class="bot-avatar-sm">⚡</div>
+                            <div class="bot-bubble typing-bubble">
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Selected Task indicator -->
+                    <template if:true={selectedTask}>
+                        <div class="selected-task-bar">
+                            <span class="selected-task-label">📋 Updating:</span>
+                            <span class="selected-task-name">{selectedTask.subject}</span>
+                            <button class="clear-task-btn" onclick={clearSelectedTask} title="Change task">✕</button>
+                        </div>
+                    </template>
+
+                </div>
+
+                <!-- ── Input area ── -->
+                <div class="chat-footer">
+                    <div class="input-row">
+                        <textarea
+                            class="msg-input"
+                            placeholder={inputPlaceholder}
+                            value={userInput}
+                            onchange={handleInput}
+                            onkeydown={handleKeyDown}
+                            disabled={isSending}
+                            rows="2">
+                        </textarea>
+                        <div class="input-actions">
+                            <button class="mic-btn" onclick={toggleMic} title={micButtonLabel}>
+                                <lightning-icon icon-name={micIcon} size="x-small"></lightning-icon>
+                            </button>
+                            <button class={sendBtnClass} onclick={handleSend} disabled={isSendDisabled} title="Send">
+                                <lightning-icon icon-name="utility:send" size="x-small"></lightning-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <template if:true={isListening}>
+                        <div class="listening-pill">🎙️ Listening...</div>
+                    </template>
+                </div>
+            </template>
+
+        </div>
+    </div>
+
+    <!-- Hidden speech iframe -->
+    <iframe src={iframeUrl} style="display:none;" title="Speech Recognizer" sandbox="allow-scripts allow-same-origin"></iframe>
+</template>

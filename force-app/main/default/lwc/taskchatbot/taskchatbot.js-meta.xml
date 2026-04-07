@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>66.0</apiVersion>
+    <isExposed>true</isExposed>
+    <targets>
+        <!-- App page: drag onto any Lightning App Page -->
+        <target>lightning__AppPage</target>
+        <!-- Utility bar: add as a utility item so it floats on every page -->
+        <target>lightning__UtilityBar</target>
+        <!-- Record pages: works on any SObject record -->
+        <target>lightning__RecordPage</target>
+        <!-- Home page -->
+        <target>lightning__HomePage</target>
+    </targets>
+</LightningComponentBundle>

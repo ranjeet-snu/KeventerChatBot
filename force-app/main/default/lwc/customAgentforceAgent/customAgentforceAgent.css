@@ -1,0 +1,217 @@
+.chat-resizable-container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+/* .chat-window {
+    flex-grow: 1;
+    overflow-y: auto;
+    min-height: 150px;
+    max-height: 80vh;
+    border: 1px solid #ccc;
+} */
+
+.resize-handle {
+    height: 6px;
+    background: #e0e0e0;
+    border-top: 1px solid #ccc;
+    cursor: ns-resize;
+    user-select: none;
+}
+
+.agentforce-highlight {
+    color: #0052cc;
+}
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.textarea-with-icon lightning-textarea {
+  flex: 1; /* Let textarea take full width minus buttons */
+  margin-right: 50px; /* Leave space for buttons */
+}
+/* Responsive tweaks */
+@media (max-width: 600px) {
+    .input-container {
+        display: block;
+    }
+
+    .textarea-with-icon lightning-textarea {
+        width: 100%;
+        padding-right: 3rem; /* Ensure space for floating buttons */
+    }
+
+    .icon-buttons {
+        top: auto;
+        bottom: 0.5rem;
+        right: 0.5rem;
+    }
+}
+.icon-buttons {
+  position: absolute;
+  right: 60px;
+  top: 18px;
+  display: flex;
+  gap: 8px; /* space between buttons */
+}
+
+.send-icon-button,
+.mic-icon-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  height: 24px;
+  width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0070d2;
+}
+
+.send-icon-button:hover,
+.mic-icon-button:hover {
+  color: #005fb2;
+}
+
+/* .chat-window {
+    scroll-behavior: smooth;
+    overflow-y: auto;
+    height: 300px; 
+    flex-shrink: 0;
+} */
+.option-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 0.5rem;
+}
+
+.option-button {
+    background-color: white;
+    color: #005290;
+    border: 1px solid #005290;
+    border-radius: 0.5rem;
+    padding: 4px 12px;
+    margin: 4px 4px 0 0;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s ease;
+}
+
+.option-button:hover {
+    background-color: #005290;
+    color: white;
+}
+.listening-bar {
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #0070d2 0%, #00a1f1 50%, #0070d2 100%);
+    background-size: 200% 100%; /* Needed for animation to move */
+    background-position: 0% 50%;
+    animation: loadingBar 1.5s linear infinite;
+    margin-top: 4px;
+    border-radius: 2px;
+}
+@media (max-width: 600px) {
+    .chat-resizable-container {
+        height: 100vh;
+        max-height: 100vh;
+    }
+
+    .chat-window {
+        height: calc(100vh - 220px); /* adjust based on actual input/mic/send height */
+        max-height: calc(100vh - 220px);
+        min-height: 200px;
+    }
+
+    .input-area {
+        padding-bottom: env(safe-area-inset-bottom, 1rem); /* for mobile safe area */
+    }
+
+    .resize-handle {
+        display: none; /* Hide resizing on mobile */
+    }
+}
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+
+
+@keyframes loadingBar {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 200% 50%;
+    }
+}
+.textarea-wrapper {
+    position: relative;
+}
+
+.mic-button-wrapper {
+    position: absolute;
+    top: 12px; /* tweak this for vertical centering */
+    right: 12px;
+    z-index: 1;
+}
+.language-selector {
+    position: absolute;
+    right: 2rem;
+    z-index: 1000;
+}
+
+.language-selector lightning-combobox {
+    min-width: 150px;
+    font-size: 1rem;
+    --slds-c-input-radius-border: 0.5rem;
+    --slds-c-input-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+/* Base (Mobile): Below send button, full width */
+.language-selector-container {
+    position: static;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.language-selector-container lightning-combobox {
+    width: 100%;
+    max-width: 300px;
+    font-size: 1rem;
+    --slds-c-input-radius-border: 0.5rem;
+    --slds-c-input-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Desktop (768px+): Float to top-right */
+@media screen and (min-width: 768px) {
+    .language-selector-container {
+        position: absolute;
+        right: 3rem;
+        z-index: 1000;
+    }
+
+    .language-selector-container lightning-combobox {
+       min-width: 150px;
+    font-size: 1rem;
+    --slds-c-input-radius-border: 0.5rem;
+    --slds-c-input-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* Make lightning-combobox label bold */
+.custom-label {
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    display: inline-block;
+}
+.chat-image {
+    max-width: 200px;
+    max-height: 150px;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}

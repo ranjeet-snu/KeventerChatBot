@@ -1,0 +1,277 @@
+<template>
+    <!-- ═══════════════════════════════════════════════════════════
+         LEAD TASK CHAT — Root container
+    ═══════════════════════════════════════════════════════════ -->
+    <div class={rootClass}>
+
+        <!-- ── COLLAPSED BUBBLE ──────────────────────────────────── -->
+        <template if:false={isOpen}>
+            <div class="bubble-wrap">
+                <button class="bubble" onclick={openChat} title="Open Task Assistant">
+                    <span class="bubble-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    <span class="bubble-label">Task Assistant</span>
+                    <template if:true={hasNewMessage}>
+                        <span class="bubble-dot"></span>
+                    </template>
+                </button>
+            </div>
+        </template>
+
+        <!-- ── EXPANDED PANEL ────────────────────────────────────── -->
+        <template if:true={isOpen}>
+            <div class="panel">
+
+                <!-- HEADER -->
+                <div class="panel-header">
+                    <div class="header-glow"></div>
+
+                    <div class="header-left">
+                        <div class="avatar-ring">
+                            <div class="avatar">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                                    <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                                    <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="header-text">
+                            <span class="header-title">Task Assistant</span>
+                            <span class="header-sub">
+                                <span class="status-dot"></span>
+                                <template if:true={leadName}>{leadName}</template>
+                                <template if:false={leadName}>Lead Context</template>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="header-right">
+                        <!-- Language selector -->
+                        <div class="lang-pills">
+                            <template for:each={languageOptions} for:item="lang">
+                                <button
+                                    key={lang.code}
+                                    class={lang.pillClass}
+                                    onclick={handleLangSelect}
+                                    data-code={lang.code}
+                                    data-label={lang.label}
+                                    title={lang.label}>
+                                    {lang.short}
+                                </button>
+                            </template>
+                        </div>
+                        <button class="close-btn" onclick={closeChat} title="Close">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TASK CONTEXT BAR -->
+                <template if:true={currentTask}>
+                    <div class="task-bar">
+                        <span class="task-bar-icon">📋</span>
+                        <div class="task-bar-info">
+                            <span class="task-bar-subject">{currentTask.subject}</span>
+                            <span class="task-bar-meta">{currentTask.status} · {currentTask.priority}</span>
+                        </div>
+                        <span class={taskBarStateBadge}>{conversationStateLabel}</span>
+                    </div>
+                </template>
+
+                <!-- MESSAGES AREA -->
+                <div class="messages-area" lwc:ref="msgArea">
+                    <template if:true={isLoading}>
+                        <div class="init-state">
+                            <div class="orbit-loader">
+                                <div class="orbit-ring"></div>
+                                <div class="orbit-dot"></div>
+                            </div>
+                            <p class="init-text">Connecting...</p>
+                        </div>
+                    </template>
+
+                    <template if:false={isLoading}>
+                        <template for:each={messages} for:item="msg">
+                            <div key={msg.id} class={msg.rowClass}>
+
+                                <!-- SYSTEM -->
+                                <template if:true={msg.isSystem}>
+                                    <div class="sys-msg">{msg.text}</div>
+                                </template>
+
+                                <!-- BOT -->
+                                <template if:true={msg.isBot}>
+                                    <div class="bot-msg-wrap">
+                                        <div class="bot-avatar-xs">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke-linejoin="round"/>
+                                                <path d="M2 17L12 22L22 17" stroke-linejoin="round"/>
+                                                <path d="M2 12L12 17L22 12" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
+                                        <div class="bot-bubble">
+                                            <p class="msg-text">{msg.text}</p>
+
+                                            <!-- Success badge -->
+                                            <template if:true={msg.isSuccess}>
+                                                <div class="success-badge">
+                                                    <span>✅ Updated successfully</span>
+                                                </div>
+                                            </template>
+
+                                            <!-- Task detail card -->
+                                            <template if:true={msg.showTaskCard}>
+                                                <div class="task-detail-card">
+                                                    <div class="tdc-row">
+                                                        <span class="tdc-label">Subject</span>
+                                                        <span class="tdc-val">{msg.taskCard.subject}</span>
+                                                    </div>
+                                                    <div class="tdc-row">
+                                                        <span class="tdc-label">Status</span>
+                                                        <span class={msg.taskCard.statusClass}>{msg.taskCard.status}</span>
+                                                    </div>
+                                                    <div class="tdc-row">
+                                                        <span class="tdc-label">Priority</span>
+                                                        <span class={msg.taskCard.priorityClass}>{msg.taskCard.priority}</span>
+                                                    </div>
+                                                    <div class="tdc-row">
+                                                        <span class="tdc-label">Due</span>
+                                                        <span class="tdc-val">{msg.taskCard.dueDate}</span>
+                                                    </div>
+                                                    <template if:true={msg.taskCard.hasDescription}>
+                                                        <div class="tdc-row tdc-row--full">
+                                                            <span class="tdc-label">Comments</span>
+                                                            <p class="tdc-comment">{msg.taskCard.currentDescription}</p>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+
+                                            <!-- Confirm buttons -->
+                                            <template if:true={msg.showConfirm}>
+                                                <div class="confirm-actions">
+                                                    <button class="confirm-yes" onclick={handleConfirmYes}>Yes, update ✓</button>
+                                                    <button class="confirm-no"  onclick={handleConfirmNo}>Cancel ✗</button>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- USER -->
+                                <template if:true={msg.isUser}>
+                                    <div class="user-msg-wrap">
+                                        <div class="user-bubble">
+                                            <p class="msg-text">{msg.text}</p>
+                                            <template if:true={msg.isVoice}>
+                                                <span class="voice-tag">🎙️ voice</span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+
+                            </div>
+                        </template>
+
+                        <!-- Typing indicator -->
+                        <template if:true={isTyping}>
+                            <div class="msg-row">
+                                <div class="bot-msg-wrap">
+                                    <div class="bot-avatar-xs">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke-linejoin="round"/>
+                                        </svg>
+                                    </div>
+                                    <div class="bot-bubble typing-bubble">
+                                        <span class="t-dot"></span>
+                                        <span class="t-dot"></span>
+                                        <span class="t-dot"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                    </template>
+                </div>
+
+                <!-- FOOTER / INPUT -->
+                <div class="panel-footer">
+
+                    <!-- Voice status banner -->
+                    <template if:true={isListening}>
+                        <div class="voice-banner">
+                            <span class="voice-wave">
+                                <span></span><span></span><span></span><span></span><span></span>
+                            </span>
+                            <span class="voice-lang-label">Listening in {activeLangLabel}...</span>
+                            <button class="stop-btn" onclick={stopListening}>Stop</button>
+                        </div>
+                    </template>
+
+                    <div class="input-row">
+                        <div class="textarea-wrap">
+                            <textarea
+                                class="chat-input"
+                                value={userInput}
+                                onchange={handleInput}
+                                onkeydown={handleKeyDown}
+                                placeholder={inputPlaceholder}
+                                disabled={inputDisabled}
+                                rows="1">
+                            </textarea>
+                        </div>
+
+                        <!-- Mic button group -->
+                        <div class="mic-group">
+                            <button
+                                class={micBtnClass}
+                                onclick={toggleMic}
+                                title={micTitle}
+                                disabled={inputDisabled}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                    <line x1="12" y1="19" x2="12" y2="23"/>
+                                    <line x1="8" y1="23" x2="16" y2="23"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Send button -->
+                        <button
+                            class={sendBtnClass}
+                            onclick={handleSend}
+                            disabled={sendDisabled}
+                            title="Send">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <p class="footer-hint">
+                        English · हिंदी · বাংলা &nbsp;·&nbsp; Press Enter to send
+                    </p>
+                </div>
+
+            </div>
+        </template>
+
+    </div>
+
+    <!-- Hidden speech iframe -->
+    <iframe
+        src={iframeUrl}
+        style="display:none;"
+        title="Speech Engine"
+        sandbox="allow-scripts allow-same-origin">
+    </iframe>
+</template>

@@ -1,0 +1,83 @@
+.chat-bubble {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #00a1e0, #005fb2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    z-index: 9999;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.chat-bubble:hover { transform: scale(1.1); }
+
+.premium-chat-container {
+    position: fixed;
+    bottom: 100px;
+    right: 25px;
+    width: 320px;
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+    z-index: 10000;
+    animation: slideUp 0.3s ease-out;
+}
+
+.chat-header {
+    background: #16325c;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-dot {
+    height: 8px;
+    width: 8px;
+    background-color: #4df33f;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.chat-body { padding: 20px; height: 150px; background: #f9fbff; }
+
+.chat-footer { padding: 15px; border-top: 1px solid #eee; }
+
+.input-wrapper { display: flex; align-items: center; background: #f0f2f5; border-radius: 20px; padding: 5px 15px; margin-bottom: 10px; }
+
+.custom-input { border: none; background: transparent; width: 100%; outline: none; padding: 8px; }
+
+.mic-btn { border: none; background: transparent; cursor: pointer; padding: 5px; }
+
+.listening { animation: pulse-red 1.5s infinite; }
+
+.send-btn {
+    width: 100%;
+    background: #0070d2;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-red {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); color: red; }
+    100% { transform: scale(1); }
+}
