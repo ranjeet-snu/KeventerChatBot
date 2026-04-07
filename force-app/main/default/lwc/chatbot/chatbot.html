@@ -1,49 +1,94 @@
 <template>
     <div class="slds-scope">
-        <div class={chatIconClass} onclick={toggleChat}>
-            <lightning-icon icon-name="utility:chat" variant="inverse" size="medium"></lightning-icon>
+        <div class={chatIconClass} onclick={toggleChat} title="Open Assistant">
+            <lightning-icon 
+                icon-name="utility:chat" 
+                variant="inverse" 
+                size="medium">
+            </lightning-icon>
         </div>
 
         <template if:true={isOpen}>
-            <section class="premium-chat-container">
+            <section class="premium-chat-container slds-popover slds-nubbin_bottom-right">
+                
                 <header class="chat-header">
                     <div class="header-content">
                         <span class="status-dot"></span>
-                        <h2>Task Assistant</h2>
+                        <div class="header-text">
+                            <h2>Task Assistant</h2>
+                            <p class="sub-text">Lead Support v1.0</p>
+                        </div>
                     </div>
-                    <lightning-button-icon icon-name="utility:minimize_window" onclick={toggleChat} variant="bare-inverse"></lightning-button-icon>
+                    <lightning-button-icon 
+                        icon-name="utility:minimize_window" 
+                        onclick={toggleChat} 
+                        variant="bare-inverse"
+                        class="minimize-icon">
+                    </lightning-button-icon>
                 </header>
 
                 <div class="chat-body">
+                    
+                    <div class="language-section">
+                        <p class="section-label">SELECT LANGUAGE</p>
+                        <div class="chip-container">
+                            <button class={engChipClass} onclick={setEnglish}>EN</button>
+                            <button class={hinChipClass} onclick={setHindi}>हिन्दी</button>
+                            <button class={benChipClass} onclick={setBengali}>বাংলা</button>
+                        </div>
+                    </div>
+
                     <template if:true={latestTask}>
                         <div class="task-card">
-                            <p class="label">UPDATING TASK:</p>
-                            <p class="task-subject">{latestTask.Subject}</p>
+                            <div class="task-info">
+                                <lightning-icon icon-name="standard:task" size="small" class="slds-m-right_x-small"></lightning-icon>
+                                <div>
+                                    <p class="label">ACTIVE TASK</p>
+                                    <p class="task-subject">{latestTask.Subject}</p>
+                                </div>
+                            </div>
                         </div>
-                        <p class="bot-msg">Please put your comments below...</p>
+                        <p class="instruction-text">Tap the mic or type to add comments:</p>
                     </template>
 
                     <template if:false={latestTask}>
-                        <div class="error-state">
-                            <lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon>
-                            <p>No open task found for this Lead.</p>
+                        <div class="error-box">
+                            <lightning-icon icon-name="utility:info" size="small" variant="warning"></lightning-icon>
+                            <p>No open task found for this Lead. Input disabled.</p>
                         </div>
                     </template>
                 </div>
 
                 <footer class="chat-footer">
                     <div class={inputWrapperClass}>
-                        <input type="text" 
-                               placeholder={placeholderText} 
-                               disabled={isDisabled}
-                               value={userInput} 
-                               oninput={handleInputChange} 
-                               class="custom-input"/>
+                        <input 
+                            type="text" 
+                            placeholder={placeholderText} 
+                            disabled={isDisabled}
+                            value={userInput} 
+                            oninput={handleInputChange} 
+                            class="custom-input"/>
+                        
                         <button class={micClass} onclick={handleListen} disabled={isDisabled}>
-                            <lightning-icon icon-name="utility:record" size="xx-small" variant={micVariant}></lightning-icon>
+                            <lightning-icon 
+                                icon-name="utility:record" 
+                                size="xx-small" 
+                                variant={micVariant}>
+                            </lightning-icon>
                         </button>
                     </div>
-                    <button class="send-btn" onclick={handleUpdate} disabled={isDisabled}>Update Lead Task</button>
+
+                    <button 
+                        class="update-btn" 
+                        onclick={handleUpdate} 
+                        disabled={isDisabled}>
+                        <template if:true={isProcessing}>
+                            <span class="spinner"></span>
+                        </template>
+                        <template if:false={isProcessing}>
+                            Update Lead Task
+                        </template>
+                    </button>
                 </footer>
             </section>
         </template>

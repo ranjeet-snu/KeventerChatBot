@@ -1,106 +1,120 @@
+/* 1. FLOATING BUBBLE */
 .chat-bubble {
     position: fixed;
     bottom: 25px;
     right: 25px;
-    width: 60px;
-    height: 60px;
+    width: 62px;
+    height: 62px;
     background: linear-gradient(135deg, #00a1e0, #005fb2);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 20px rgba(0, 112, 210, 0.4);
     z-index: 9999;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .chat-bubble:hover { transform: scale(1.1); }
+.hidden { display: none; }
 
+/* 2. CHAT CONTAINER */
 .premium-chat-container {
     position: fixed;
     bottom: 100px;
     right: 25px;
-    width: 320px;
-    background: #fff;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
-    z-index: 10000;
-    animation: slideUp 0.3s ease-out;
-}
-
-
-/* Premium Task Card */
-.task-card {
+    width: 330px;
     background: #ffffff;
-    border-left: 4px solid #0070d2;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18);
+    z-index: 10000;
+    animation: slideUp 0.35s ease-out;
+    border: 1px solid rgba(0,0,0,0.05);
 }
 
-.label { font-size: 10px; color: #747474; font-weight: bold; margin-bottom: 2px; }
-.task-subject { font-size: 13px; color: #16325c; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-/* Error State */
-.error-state { text-align: center; padding-top: 20px; color: #ea001e; font-weight: bold; font-size: 13px; }
-
-/* Disabled UI */
-.disabled-bg { background: #e0e5ee !important; cursor: not-allowed; }
-.custom-input:disabled { cursor: not-allowed; color: #999; }
-.send-btn:disabled { background: #b0adab; cursor: not-allowed; }
-
-.bot-msg { font-size: 13px; color: #3e3e3c; margin-top: 10px; }
+/* 3. HEADER */
 .chat-header {
     background: #16325c;
     color: white;
-    padding: 15px;
+    padding: 16px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 .status-dot {
-    height: 8px;
-    width: 8px;
+    height: 9px; 
+    width: 9px;
     background-color: #4df33f;
     border-radius: 50%;
     display: inline-block;
-    margin-right: 8px;
+    margin-right: 10px;
+    box-shadow: 0 0 6px #4df33f;
 }
 
-.chat-body { padding: 20px; height: 150px; background: #f9fbff; }
+.header-text h2 { font-size: 15px; font-weight: 700; margin: 0; }
+.sub-text { font-size: 10px; opacity: 0.7; margin: 0; }
 
-.chat-footer { padding: 15px; border-top: 1px solid #eee; }
+/* 4. CHIPS & TASK CARD */
+.chat-body { padding: 18px; background: #fff; }
+.section-label { font-size: 10px; font-weight: 800; color: #8899a6; margin-bottom: 8px; letter-spacing: 0.5px; }
+.chip-container { display: flex; gap: 8px; margin-bottom: 18px; }
 
-.input-wrapper { display: flex; align-items: center; background: #f0f2f5; border-radius: 20px; padding: 5px 15px; margin-bottom: 10px; }
-
-.custom-input { border: none; background: transparent; width: 100%; outline: none; padding: 8px; }
-
-.mic-btn { border: none; background: transparent; cursor: pointer; padding: 5px; }
-
-.listening { animation: pulse-red 1.5s infinite; }
-
-.send-btn {
-    width: 100%;
-    background: #0070d2;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
+.lang-chip {
+    flex: 1; padding: 7px; border-radius: 12px;
+    border: 1px solid #d8dde6; background: white;
+    font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;
 }
 
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+.lang-chip.active {
+    background: #0070d2; color: white; border-color: #0070d2;
+    box-shadow: 0 4px 8px rgba(0, 112, 210, 0.25);
 }
 
-@keyframes pulse-red {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); color: red; }
-    100% { transform: scale(1); }
+.task-card {
+    background: #f4f6f9; border-left: 4px solid #0070d2;
+    padding: 12px; border-radius: 6px; margin-bottom: 15px;
 }
+
+.task-info { display: flex; align-items: center; }
+.label { font-size: 9px; color: #747474; font-weight: 700; text-transform: uppercase; }
+.task-subject { font-size: 13px; font-weight: 600; color: #16325c; margin: 0; }
+
+/* 5. INPUT & BUTTONS */
+.chat-footer { padding: 18px; border-top: 1px solid #eee; background: #fff; }
+.input-wrapper { display: flex; align-items: center; background: #f0f2f5; border-radius: 22px; padding: 4px 14px; margin-bottom: 12px; }
+.custom-input { border: none; background: transparent; width: 100%; outline: none; padding: 10px 4px; font-size: 13px; }
+.disabled-bg { background: #e0e5ee !important; opacity: 0.6; }
+
+.update-btn {
+    width: 100%; background: #0070d2; color: white;
+    border: none; padding: 13px; border-radius: 10px;
+    font-weight: 700; cursor: pointer; transition: 0.2s;
+}
+
+.update-btn:hover:not(:disabled) { background: #005fb2; transform: translateY(-1px); }
+.update-btn:disabled { background: #b0adab; cursor: not-allowed; }
+
+/* 6. ANIMATIONS */
+@keyframes slideUp { 
+    from { opacity: 0; transform: translateY(25px) scale(0.98); } 
+    to { opacity: 1; transform: translateY(0) scale(1); } 
+}
+
+@keyframes pulse-red { 
+    0% { transform: scale(1); } 
+    50% { transform: scale(1.15); box-shadow: 0 0 10px rgba(234, 0, 30, 0.4); } 
+    100% { transform: scale(1); } 
+}
+
+.listening { animation: pulse-red 1.2s infinite; border-radius: 50%; }
+
+.spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,.3); border-radius: 50%;
+    border-top-color: #fff; animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
