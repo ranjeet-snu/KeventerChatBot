@@ -1,54 +1,42 @@
 public with sharing class LeadChatBotController2 {
 
-    // Method 1: Get latest open task
     @AuraEnabled(cacheable=false)
     public static Task getLatestOpenTask(Id leadId) {
         List<Task> tasks = [SELECT Id, Subject, Description
-                            FROM Task
-                            WHERE WhoId = :leadId
+                            FROM Task WHERE WhoId = :leadId
                             AND IsClosed = false
-                            ORDER BY CreatedDate DESC
-                            LIMIT 1];
+                            ORDER BY CreatedDate DESC LIMIT 1];
         return tasks.isEmpty() ? null : tasks[0];
     }
 
-    // Method 2: Update task description via Prompt Builder
     @AuraEnabled
     public static void updateLatestTask(Id taskId, String comment) {
         try {
-            if (taskId == null) {
-                throw new AuraHandledException('No Task ID provided.');
-            }
-            // Send to Prompt Builder first
-            String processedComment = processWithPrompt(comment);
-            Task taskToUpdate = new Task(Id = taskId, Description = processedComment);
-            update taskToUpdate;
+            if (taskId == null) throw new AuraHandledException('No Task ID provided.');
+            String processed = processWithPrompt(comment);
+            update new Task(Id = taskId, Description = processed);
         } catch (Exception e) {
-            throw new AuraHandledException('Error updating task: ' + e.getMessage());
+            throw new AuraHandledException(e.getMessage());
         }
     }
 
-    // Method 3: Create a new Task for the Lead
     @AuraEnabled
     public static Task createTask(Id leadId, String subject, String comment) {
         try {
-            // Send comment to Prompt Builder first
-            String processedComment = processWithPrompt(comment);
-            Task newTask = new Task(
+            Task t = new Task(
                 WhoId       = leadId,
                 Subject     = subject,
-                Description = processedComment,
+                Description = comment,
                 Status      = 'Not Started',
                 Priority    = 'Normal'
             );
-            insert newTask;
-            return newTask;
+            insert t;
+            return t;
         } catch (Exception e) {
-            throw new AuraHandledException('Error creating task: ' + e.getMessage());
+            throw new AuraHandledException(e.getMessage());
         }
     }
 
-    // Method 4: Process input through Prompt Builder
     @AuraEnabled
     public static String processWithPrompt(String inputText) {
         try {
@@ -69,14 +57,12 @@ public with sharing class LeadChatBotController2 {
 
             ConnectApi.EinsteinPromptTemplateGenerationsRepresentation output =
                 ConnectApi.EinsteinLLM.generateMessagesForPromptTemplate(
-                    'Language_Conversion', // ← your template API name
+                    'Language_Conversion', // ← replace with your template API name
                     promptInput
                 );
-
             return output.generations[0].text;
         } catch (Exception e) {
-            // If prompt fails, return original input
-            return inputText;
+            return inputText; // fallback to original
         }
     }
 }
