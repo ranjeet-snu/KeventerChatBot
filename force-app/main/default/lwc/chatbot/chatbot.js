@@ -2,7 +2,6 @@ import { LightningElement, api, track } from 'lwc';
 import getLatestOpenTask from '@salesforce/apex/LeadChatBotController2.getLatestOpenTask';
 import updateLatestTask from '@salesforce/apex/LeadChatBotController2.updateLatestTask';
 import createTask from '@salesforce/apex/LeadChatBotController2.createTask';
-import processWithPrompt from '@salesforce/apex/LeadChatBotController2.processWithPrompt';
 
 export default class Chatbot extends LightningElement {
     @api recordId;
@@ -185,21 +184,8 @@ export default class Chatbot extends LightningElement {
         this.showTyping(() => {
             this.addBotMessage('Analyzing your input and creating the task... ⚙️');
 
-            // First send to prompt to get summarized English
-            processWithPrompt({ inputText: text })
-                .then(summarized => {
-                    // Use summarized text as both subject and comment
-                    // Subject = first 80 chars of summarized, Comment = full summarized
-                    const subject = summarized.length > 80
-                        ? summarized.substring(0, 80).trim() + '...'
-                        : summarized.trim();
-
-                    return createTask({
-                        leadId:  this.recordId,
-                        subject: subject,
-                        comment: summarized
-                    });
-                })
+            // Apex now handles both prompts (Language_Conversion and Task_comments)
+            createTask({ leadId: this.recordId, rawInput: text })
                 .then(newTask => {
                     this.isProcessing = false;
                     this.latestTask = newTask;
@@ -213,9 +199,10 @@ export default class Chatbot extends LightningElement {
                         this.askAnythingElse();
                     });
                 })
-                .catch(() => {
+                .catch((error) => {
                     this.isProcessing = false;
                     this.showTyping(() => {
+                        console.error('Task Creation Error: ', error);
                         this.addBotMessage('❌ Sorry, failed to create the task. Please try again.');
                         this.isInputDisabled = false;
                     });
