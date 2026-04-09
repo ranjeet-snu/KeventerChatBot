@@ -93,9 +93,18 @@
                             oninput={handleInputChange}
                             onkeydown={handleKeyDown}
                             class="custom-input" />
-                        <button class={micClass} onclick={handleListen} disabled={isInputDisabled}>
-                            <lightning-icon icon-name="utility:record" size="xx-small" variant={micVariant}>
-                            </lightning-icon>
+                        <button 
+                            class={micClass} 
+                            onclick={handleListen} 
+                            disabled={isInputDisabled}
+                            title="Voice Input">
+                            <span class="mic-icon-wrapper">
+                                <lightning-icon 
+                                    icon-name="utility:unmuted" 
+                                    size="small" 
+                                    variant="inverse">
+                                </lightning-icon>
+                            </span>
                         </button>
                     </div>
                     <button class="send-btn" onclick={handleSend} disabled={isInputDisabled}>
