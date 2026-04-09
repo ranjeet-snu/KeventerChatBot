@@ -1,0 +1,195 @@
+<template>
+    <div class="slds-scope">
+
+        <!-- Floating Bubble -->
+        <div class={chatIconClass} onclick={toggleChat} title="Open Assistant">
+            <lightning-icon icon-name="utility:chat" variant="inverse" size="medium">
+            </lightning-icon>
+        </div>
+
+        <template if:true={isOpen}>
+            <section class="premium-chat-container slds-popover slds-nubbin_bottom-right">
+
+                <!-- Header -->
+                <header class="chat-header">
+                    <div class="header-content">
+                        <span class="status-dot"></span>
+                        <div class="header-text">
+                            <h2>Task Assistant</h2>
+                            <p class="sub-text">Lead Support v1.0</p>
+                        </div>
+                    </div>
+                    <lightning-button-icon
+                        icon-name="utility:minimize_window"
+                        onclick={toggleChat}
+                        variant="bare-inverse"
+                        class="minimize-icon">
+                    </lightning-button-icon>
+                </header>
+
+                <div class="chat-body">
+
+                    <!-- Language Selector (always visible) -->
+                    <div class="language-section">
+                        <p class="section-label">SELECT LANGUAGE</p>
+                        <div class="chip-container">
+                            <button class={engChipClass} onclick={setEnglish}>EN</button>
+                            <button class={hinChipClass} onclick={setHindi}>हिन्दी</button>
+                            <button class={benChipClass} onclick={setBengali}>বাংলা</button>
+                        </div>
+                    </div>
+
+                    <!-- ── HOME VIEW ── -->
+                    <template if:true={isHomeView}>
+
+                        <!-- Active Task Card -->
+                        <template if:true={latestTask}>
+                            <div class="task-card">
+                                <div class="task-info">
+                                    <lightning-icon icon-name="standard:task" size="small"
+                                        class="slds-m-right_x-small">
+                                    </lightning-icon>
+                                    <div>
+                                        <p class="label">ACTIVE TASK</p>
+                                        <p class="task-subject">{latestTask.Subject}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- No Task Warning -->
+                        <template if:false={latestTask}>
+                            <div class="error-box">
+                                <lightning-icon icon-name="utility:info" size="small"
+                                    variant="warning">
+                                </lightning-icon>
+                                <p>No open task found for this Lead.</p>
+                            </div>
+                        </template>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <template if:true={latestTask}>
+                                <button class="action-btn primary" onclick={goToAddComment}>
+                                    <lightning-icon icon-name="utility:edit" size="xx-small"
+                                        variant="inverse" class="slds-m-right_x-small">
+                                    </lightning-icon>
+                                    Add Comment
+                                </button>
+                            </template>
+                            <button class="action-btn secondary" onclick={goToCreateTask}>
+                                <lightning-icon icon-name="utility:add" size="xx-small"
+                                    class="slds-m-right_x-small">
+                                </lightning-icon>
+                                Create Task
+                            </button>
+                        </div>
+
+                    </template>
+
+                    <!-- ── ADD COMMENT VIEW ── -->
+                    <template if:true={isAddCommentView}>
+                        <div class="view-header">
+                            <button class="back-btn" onclick={goBack}>← Back</button>
+                            <p class="view-title">Add Comment</p>
+                        </div>
+
+                        <div class="task-card">
+                            <p class="label">TASK</p>
+                            <p class="task-subject">{latestTask.Subject}</p>
+                        </div>
+
+                        <p class="instruction-text">
+                            Type in Bengali, Hindi or English — it will be auto-summarized in English.
+                        </p>
+                    </template>
+
+                    <!-- ── CREATE TASK VIEW ── -->
+                    <template if:true={isCreateTaskView}>
+                        <div class="view-header">
+                            <button class="back-btn" onclick={goBack}>← Back</button>
+                            <p class="view-title">Create New Task</p>
+                        </div>
+
+                        <p class="instruction-text">
+                            Type in Bengali, Hindi or English — comment will be auto-summarized in English.
+                        </p>
+
+                        <!-- Subject Input -->
+                        <div class="field-label">Subject *</div>
+                        <div class="input-wrapper">
+                            <input
+                                type="text"
+                                placeholder="Enter task subject..."
+                                value={newTaskSubject}
+                                oninput={handleSubjectChange}
+                                class="custom-input" />
+                        </div>
+
+                        <!-- Comment Input -->
+                        <div class="field-label">Comment *</div>
+                        <div class="input-wrapper">
+                            <input
+                                type="text"
+                                placeholder="Type or use mic..."
+                                value={newTaskComment}
+                                oninput={handleCreateCommentChange}
+                                class="custom-input" />
+                            <button class={micClass} data-field="createComment" onclick={handleListen}>
+                                <lightning-icon icon-name="utility:record" size="xx-small"
+                                    variant={micVariant}>
+                                </lightning-icon>
+                            </button>
+                        </div>
+                    </template>
+
+                </div>
+
+                <!-- Footer -->
+                <footer class="chat-footer">
+
+                    <!-- Add Comment Footer -->
+                    <template if:true={isAddCommentView}>
+                        <div class={inputWrapperClass}>
+                            <input
+                                type="text"
+                                placeholder={placeholderText}
+                                disabled={isDisabled}
+                                value={userInput}
+                                oninput={handleInputChange}
+                                class="custom-input" />
+                            <button class={micClass} data-field="comment"
+                                onclick={handleListen} disabled={isDisabled}>
+                                <lightning-icon icon-name="utility:record" size="xx-small"
+                                    variant={micVariant}>
+                                </lightning-icon>
+                            </button>
+                        </div>
+                        <button class="update-btn" onclick={handleUpdate} disabled={isDisabled}>
+                            <template if:true={isProcessing}>
+                                <span class="spinner"></span> Processing...
+                            </template>
+                            <template if:false={isProcessing}>
+                                Save Comment
+                            </template>
+                        </button>
+                    </template>
+
+                    <!-- Create Task Footer -->
+                    <template if:true={isCreateTaskView}>
+                        <button class="update-btn" onclick={handleCreateTask} disabled={isDisabled}>
+                            <template if:true={isProcessing}>
+                                <span class="spinner"></span> Processing...
+                            </template>
+                            <template if:false={isProcessing}>
+                                Create Task
+                            </template>
+                        </button>
+                    </template>
+
+                </footer>
+
+            </section>
+        </template>
+    </div>
+</template>
